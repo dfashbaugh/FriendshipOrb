@@ -1,5 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
+#include <Adafruit_DotStar.h>
+#include <SPI.h>         
 
 // Update these with values suitable for your network.
 //const char* ssid = "........";
@@ -11,6 +13,8 @@ const char* password = "ClarkIsACat";
 const char* mqtt_server = "0.tcp.ngrok.io";
 #define MQTT_PORT 14708
 
+#define MQTT_CLIENT_NAME "Dylan"
+
 #define IN_TOPIC "friendship"
 #define OUT_TOPIC "friendship"
 
@@ -18,6 +22,12 @@ const char* mqtt_server = "0.tcp.ngrok.io";
 
 #define LIGHT_COLOR 0xFF00FF
 #define LIGHT_ON_DURATION 1000
+
+// Setup LEDs
+#define NUMPIXELS 255 
+#define DATAPIN    4
+#define CLOCKPIN   5
+Adafruit_DotStar strip = Adafruit_DotStar(NUMPIXELS, DATAPIN, CLOCKPIN);
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -33,6 +43,9 @@ void setup() {
   client.setCallback(callback);
 
   pinMode(INPUT_PIN, INPUT_PULLUP);
+
+  strip.begin(); // Initialize pins for output
+  strip.show();  // Turn all LEDs off ASAP
 }
 
 void setup_wifi() {
@@ -75,7 +88,7 @@ void reconnect() {
   {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    if (client.connect("ESP8266Client")) {
+    if (client.connect(MQTT_CLIENT_NAME)) {
       Serial.println("connected");
       client.subscribe(IN_TOPIC);
     } 
@@ -87,6 +100,22 @@ void reconnect() {
       // Wait 5 seconds before retrying
       delay(5000);
     }
+  }
+}
+
+void clearAllPixels()
+{
+  for(int i = 0; i < NUMPIXELS; i++)
+  {
+    strip.setPixelColor(i, 0x000000);
+  }
+}
+
+void lightMainPixelColor()
+{
+  for(int i = 0; i < NUMPIXELS; i++)
+  {
+    strip.setPixelColor(i, LIGHT_COLOR);
   }
 }
 
@@ -105,10 +134,11 @@ void loop() {
 
   if(millis() - lightStartedTime < LIGHT_ON_DURATION)
   {
-    // Light the light
+    lightMainPixelColor();
   }
   else
   {
-    // Turn off the Light
+    clearAllPixels();
   }
+  strip.show();
 }
