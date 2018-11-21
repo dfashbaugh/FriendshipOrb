@@ -11,18 +11,28 @@ const char* password = "ClarkIsACat";
 const char* mqtt_server = "0.tcp.ngrok.io";
 #define MQTT_PORT 14708
 
+#define IN_TOPIC "friendship"
+#define OUT_TOPIC "friendship"
+
+#define INPUT_PIN 14
+
+#define LIGHT_COLOR 0xFF00FF
+#define LIGHT_ON_DURATION 1000
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 long lastMsg = 0;
 char msg[50];
 int value = 0;
+unsigned long lightStartedTime = 0;
 
 void setup() {
-  pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
   Serial.begin(115200);
   setup_wifi();
   client.setServer(mqtt_server, MQTT_PORT);
   client.setCallback(callback);
+
+  pinMode(INPUT_PIN, INPUT_PULLUP);
 }
 
 void setup_wifi() {
@@ -55,14 +65,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
   Serial.println();
 
-  // Switch on the LED if an 1 was received as first character
-  if ((char)payload[0] == '1') {
-    digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
-    // but actually the LED is on; this is because
-    // it is acive low on the ESP-01)
-  } else {
-    digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
-  }
+  lightStartedTime = millis();
 
 }
 
@@ -74,10 +77,7 @@ void reconnect() {
     // Attempt to connect
     if (client.connect("ESP8266Client")) {
       Serial.println("connected");
-      // Once connected, publish an announcement...
-      client.publish("friendship", "hello world");
-      // ... and resubscribe
-      client.subscribe("friendship");
+      client.subscribe(IN_TOPIC);
     } 
     else 
     {
@@ -92,18 +92,23 @@ void reconnect() {
 
 void loop() {
 
-  if (!client.connected()) {
+  if (!client.connected()) 
+  {
     reconnect();
   }
   client.loop();
 
-  long now = millis();
-  if (now - lastMsg > 2000) {
-    lastMsg = now;
-    ++value;
-    snprintf (msg, 75, "hello world #%ld", value);
-    Serial.print("Publish message: ");
-    Serial.println(msg);
-    client.publish("friendship", msg);
+  if(digitalRead(INPUT_PIN) == 0)
+  {
+    client.publish(OUT_TOPIC, msg);
+  }
+
+  if(millis() - lightStartedTime < LIGHT_ON_DURATION)
+  {
+    // Light the light
+  }
+  else
+  {
+    // Turn off the Light
   }
 }
