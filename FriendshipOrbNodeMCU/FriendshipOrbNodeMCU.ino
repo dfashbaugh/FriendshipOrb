@@ -4,13 +4,10 @@
 #include <SPI.h>         
 
 // Update these with values suitable for your network.
-//const char* ssid = "........";
-//const char* password = "........";
-//const char* mqtt_server = "broker.mqtt-dashboard.com";
+const char* ssid = "........";
+const char* password = "........";
+const char* mqtt_server = "broker.mqtt-dashboard.com";
 
-const char* ssid = "MagDylan";
-const char* password = "ClarkIsACat";
-const char* mqtt_server = "0.tcp.ngrok.io";
 #define MQTT_PORT 14708
 
 #define MQTT_CLIENT_NAME "Dylan"
