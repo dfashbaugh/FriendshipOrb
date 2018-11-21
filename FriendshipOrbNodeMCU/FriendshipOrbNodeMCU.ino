@@ -12,13 +12,13 @@ const char* mqtt_server = "broker.mqtt-dashboard.com";
 
 #define MQTT_CLIENT_NAME "Dylan"
 
+#define LIGHT_COLOR 0xFF00FF
+#define LIGHT_ON_DURATION 1000
+
 #define IN_TOPIC "friendship"
 #define OUT_TOPIC "friendship"
 
 #define INPUT_PIN 14
-
-#define LIGHT_COLOR 0xFF00FF
-#define LIGHT_ON_DURATION 1000
 
 // Setup LEDs
 #define NUMPIXELS 255 
