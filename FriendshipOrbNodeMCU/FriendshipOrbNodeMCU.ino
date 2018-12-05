@@ -1,7 +1,23 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <Adafruit_DotStar.h>
-#include <SPI.h>         
+#include <SPI.h>    
+#include <Encoder.h>
+
+static const uint8_t D0   = 16;
+static const uint8_t D1   = 5;
+static const uint8_t D2   = 4;
+static const uint8_t D3   = 0;
+static const uint8_t D4   = 2;
+static const uint8_t D5   = 14;
+static const uint8_t D6   = 12;
+static const uint8_t D7   = 13;
+static const uint8_t D8   = 15;
+static const uint8_t D9   = 3;
+static const uint8_t D10  = 1;
+
+Encoder myEnc(D5, D4);    
+long oldPosition  = -999; 
 
 // Update these with values suitable for your network.
 const char* ssid = "........";
@@ -12,19 +28,32 @@ const char* mqtt_server = "broker.mqtt-dashboard.com";
 
 #define MQTT_CLIENT_NAME "Dylan"
 
-#define LIGHT_COLOR 0xFF00FF
+uint32_t currentColor = 0xFF00FF;
 #define LIGHT_ON_DURATION 1000
 
 #define IN_TOPIC "friendship"
 #define OUT_TOPIC "friendship"
 
-#define INPUT_PIN 14
+#define INPUT_PIN D3
 
 // Setup LEDs
 #define NUMPIXELS 255 
 #define DATAPIN    4
 #define CLOCKPIN   5
 Adafruit_DotStar strip = Adafruit_DotStar(NUMPIXELS, DATAPIN, CLOCKPIN);
+
+uint32_t Wheel(byte WheelPos) {
+  WheelPos = 255 - WheelPos;
+  if(WheelPos < 85) {
+    return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  }
+  if(WheelPos < 170) {
+    WheelPos -= 85;
+    return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+  }
+  WheelPos -= 170;
+  return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+}
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -112,11 +141,18 @@ void lightMainPixelColor()
 {
   for(int i = 0; i < NUMPIXELS; i++)
   {
-    strip.setPixelColor(i, LIGHT_COLOR);
+    strip.setPixelColor(i, currentColor);
   }
 }
 
 void loop() {
+
+  long newPosition = myEnc.read();
+  if (newPosition != oldPosition) {
+    oldPosition = newPosition;
+    Serial.println(newPosition);
+  }
+  currentColor = Wheel(newPosition%255);
 
   if (!client.connected()) 
   {
