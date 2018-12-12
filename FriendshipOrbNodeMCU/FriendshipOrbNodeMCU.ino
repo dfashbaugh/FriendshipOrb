@@ -20,13 +20,13 @@ Encoder myEnc(D5, D4);
 long oldPosition  = -999; 
 
 // Update these with values suitable for your network.
-const char* ssid = "........";
-const char* password = "........";
-const char* mqtt_server = "broker.mqtt-dashboard.com";
+const char* ssid = "....";
+const char* password = ".....";
+const char* mqtt_server = "192.168.0.161";
 
-#define MQTT_PORT 14708
+#define MQTT_PORT 1883
 
-#define MQTT_CLIENT_NAME "Dylan"
+#define MQTT_CLIENT_NAME "Rocks"
 
 uint32_t currentColor = 0xFF00FF;
 #define LIGHT_ON_DURATION 1000
@@ -104,6 +104,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
   Serial.println();
 
+  myEnc.write(payload[0]);
+
   lightStartedTime = millis();
 
 }
@@ -162,16 +164,17 @@ void loop() {
 
   if(digitalRead(INPUT_PIN) == 0)
   {
+    msg[0] = (char)newPosition%255;
     client.publish(OUT_TOPIC, msg);
   }
 
-  if(millis() - lightStartedTime < LIGHT_ON_DURATION)
-  {
+  //if(millis() - lightStartedTime < LIGHT_ON_DURATION)
+  //{
     lightMainPixelColor();
-  }
-  else
-  {
-    clearAllPixels();
-  }
+  //}
+  //else
+  //{
+    //clearAllPixels();
+  //}
   strip.show();
 }
