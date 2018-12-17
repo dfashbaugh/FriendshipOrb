@@ -23,7 +23,7 @@ const char* mqtt_server = "192.168.0.161";
 
 #define MQTT_PORT 1883
 
-#define MQTT_CLIENT_NAME "Rocks"
+#define MQTT_CLIENT_NAME "Smash"
 
 #define MOVEMENT_DURATION 1000
 
@@ -35,6 +35,7 @@ const char* mqtt_server = "192.168.0.161";
 
 #define ON_POSITION 140
 #define OFF_POSITION 30
+#define SPEED_PERIOD 10
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -110,12 +111,12 @@ void reconnect() {
 
 void returnToDefaultPosition()
 {
-  myservo.write(ON_POSITION);
+  myservo.write(OFF_POSITION);
 }
 
 void goToTriggeredPosition()
 {
-  myservo.write(OFF_POSITION); 
+  myservo.write(ON_POSITION); 
 }
 
 void loop() {
