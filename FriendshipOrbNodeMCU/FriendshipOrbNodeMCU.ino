@@ -4,6 +4,11 @@
 #include <SPI.h>    
 #include <Encoder.h>
 
+//needed for library
+#include <DNSServer.h>
+#include <ESP8266WebServer.h>
+#include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
+
 static const uint8_t D0   = 16;
 static const uint8_t D1   = 5;
 static const uint8_t D2   = 4;
@@ -22,7 +27,7 @@ long oldPosition  = -999;
 // Update these with values suitable for your network.
 const char* ssid = "....";
 const char* password = ".....";
-const char* mqtt_server = "192.168.0.161";
+const char* mqtt_server = "68.183.121.10";
 
 #define MQTT_PORT 1883
 
@@ -79,15 +84,10 @@ void setup_wifi() {
   delay(10);
   // We start by connecting to a WiFi network
   Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
+  Serial.print("About to Setup Orb");
 
-  WiFi.begin(ssid, password);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
+  WiFiManager wifiManager;
+  wifiManager.autoConnect("Friendship Orb");
 
   Serial.println("");
   Serial.println("WiFi connected");
