@@ -117,6 +117,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 void reconnect() {
+
+  setup_wifi();
+
   // Loop until we're reconnected
   while (!client.connected()) 
   {
@@ -161,7 +164,7 @@ void lightResetPixelColor()
   }
 }
 
-void doFactoryReset()
+void doWiFiReset()
 {
   for(int i = 0; i < 3; i++)
   {
@@ -172,6 +175,10 @@ void doFactoryReset()
     strip.show();
     delay(200);
   }
+
+  WiFiManager wifiManager;
+  wifiManager.resetSettings();
+  wifiManager.autoConnect("Friendship Orb");
 }
 
 void loop() {
@@ -207,7 +214,7 @@ void loop() {
 
   if( holdingButton && ((millis() - startedHoldingPeriod) > RESET_HOLD_PERIOD) )
   {
-    doFactoryReset();
+    doWiFiReset();
   }
 
   //if(millis() - lightStartedTime < LIGHT_ON_DURATION)
