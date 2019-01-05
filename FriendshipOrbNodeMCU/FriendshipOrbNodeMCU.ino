@@ -30,6 +30,7 @@ const char* password = ".....";
 const char* mqtt_server = "68.183.121.10";
 
 #define RESET_HOLD_PERIOD 3000
+#define RESET_COLOR 0xFF0000
 unsigned long startedHoldingPeriod = 0;
 bool holdingButton = false;
 
@@ -156,7 +157,7 @@ void lightResetPixelColor()
 {
   for(int i = 0; i < NUMPIXELS; i++)
   {
-    strip.setPixelColor(i, 0x0000FF);
+    strip.setPixelColor(i, RESET_COLOR);
   }
 }
 
