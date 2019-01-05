@@ -164,6 +164,16 @@ void lightResetPixelColor()
   }
 }
 
+void doYieldDelay(unsigned long length)
+{
+  unsigned long startTime = millis();
+
+  while(millis() - startTime < length)
+  {
+    yield();
+  }
+}
+
 void doWiFiReset()
 {
   for(int i = 0; i < 3; i++)
@@ -176,8 +186,12 @@ void doWiFiReset()
     delay(200);
   }
 
-  WiFi.disconnect();
-  delay(3000);
+  Serial.println("About to disconnect and reset");
+  WiFi.disconnect(true);
+  doYieldDelay(2000);
+  ESP.reset();
+  doYieldDelay(2000);
+
 }
 
 void loop() {
