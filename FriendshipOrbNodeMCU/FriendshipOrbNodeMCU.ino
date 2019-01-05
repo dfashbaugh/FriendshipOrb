@@ -84,6 +84,7 @@ void setup() {
   strip.show();  // Turn all LEDs off ASAP
 }
 
+WiFiManager wifiManager;
 void setup_wifi() {
 
   delay(10);
@@ -91,7 +92,6 @@ void setup_wifi() {
   Serial.println();
   Serial.print("About to Setup Orb");
 
-  WiFiManager wifiManager;
   //wifiManager.resetSettings();
   wifiManager.autoConnect("Friendship Orb");
 
@@ -176,9 +176,8 @@ void doWiFiReset()
     delay(200);
   }
 
-  WiFiManager wifiManager;
-  wifiManager.resetSettings();
-  wifiManager.autoConnect("Friendship Orb");
+  WiFi.disconnect();
+  delay(3000);
 }
 
 void loop() {
