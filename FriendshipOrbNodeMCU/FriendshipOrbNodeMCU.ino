@@ -146,7 +146,10 @@ void clearAllPixels()
 
 void lightMainPixelColor()
 {
-  
+  for(int i = 0; i < NUMPIXELS; i++)
+  {
+    strip.setPixelColor(i, currentColor);
+  }
 }
 
 void lightResetPixelColor()
