@@ -29,6 +29,10 @@ const char* ssid = "....";
 const char* password = ".....";
 const char* mqtt_server = "68.183.121.10";
 
+#define RESET_HOLD_PERIOD 3000
+unsigned long startedHoldingPeriod = 0;
+bool holdingButton = false;
+
 #define MQTT_PORT 1883
 
 #define MQTT_CLIENT_NAME "Rocks"
@@ -87,6 +91,7 @@ void setup_wifi() {
   Serial.print("About to Setup Orb");
 
   WiFiManager wifiManager;
+  //wifiManager.resetSettings();
   wifiManager.autoConnect("Friendship Orb");
 
   Serial.println("");
@@ -141,9 +146,27 @@ void clearAllPixels()
 
 void lightMainPixelColor()
 {
+  
+}
+
+void lightResetPixelColor()
+{
   for(int i = 0; i < NUMPIXELS; i++)
   {
-    strip.setPixelColor(i, currentColor);
+    strip.setPixelColor(i, 0x0000FF);
+  }
+}
+
+void doFactoryReset()
+{
+  for(int i = 0; i < 3; i++)
+  {
+    lightResetPixelColor();
+    strip.show();
+    delay(200);
+    clearAllPixels();
+    strip.show();
+    delay(200);
   }
 }
 
@@ -166,6 +189,21 @@ void loop() {
   {
     msg[0] = (char)newPosition%255;
     client.publish(OUT_TOPIC, msg);
+
+    if(!holdingButton)
+    {
+      holdingButton = true;
+      startedHoldingPeriod = millis();
+    }
+  }
+  else
+  {
+    holdingButton = false;
+  }
+
+  if( holdingButton && ((millis() - startedHoldingPeriod) > RESET_HOLD_PERIOD) )
+  {
+    doFactoryReset();
   }
 
   //if(millis() - lightStartedTime < LIGHT_ON_DURATION)
