@@ -30,7 +30,7 @@ const char* password = ".....";
 const char* mqtt_server = "68.183.121.10";
 
 #define RESET_HOLD_PERIOD 3000
-#define RESET_COLOR 0xFF0000
+#define RESET_COLOR 0xFFFF00
 unsigned long startedHoldingPeriod = 0;
 bool holdingButton = false;
 
@@ -74,14 +74,15 @@ unsigned long lightStartedTime = 0;
 
 void setup() {
   Serial.begin(115200);
-  setup_wifi();
-  client.setServer(mqtt_server, MQTT_PORT);
-  client.setCallback(callback);
-
+  
   pinMode(INPUT_PIN, INPUT_PULLUP);
 
   strip.begin(); // Initialize pins for output
   strip.show();  // Turn all LEDs off ASAP
+
+  setup_wifi();
+  client.setServer(mqtt_server, MQTT_PORT);
+  client.setCallback(callback);
 }
 
 WiFiManager wifiManager;
@@ -92,6 +93,8 @@ void setup_wifi() {
   Serial.println();
   Serial.print("About to Setup Orb");
 
+  lightResetPixelColor();
+  strip.show();
   //wifiManager.resetSettings();
   wifiManager.autoConnect("Friendship Orb");
 
