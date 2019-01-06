@@ -65,6 +65,9 @@ uint32_t Wheel(byte WheelPos) {
   return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
 }
 
+// Custom Parameters
+char friendshipGroup[40] = "";
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 long lastMsg = 0;
@@ -72,20 +75,37 @@ char msg[50];
 int value = 0;
 unsigned long lightStartedTime = 0;
 
+WiFiManager wifiManager;
 void setup() {
   Serial.begin(115200);
-  
+
+  WiFiManagerParameter custom_friend_group("Friendship Group", "Friendship Group", friendshipGroup, 40);
+
+  //add all your parameters here
+  wifiManager.addParameter(&custom_friend_group);
+
+
+
   pinMode(INPUT_PIN, INPUT_PULLUP);
 
   strip.begin(); // Initialize pins for output
   strip.show();  // Turn all LEDs off ASAP
 
   setup_wifi();
+
+
+  strcpy(friendshipGroup, custom_friend_group.getValue());
+
+
+
+  Serial.print("The Group: ");
+  Serial.println(friendshipGroup);
+
   client.setServer(mqtt_server, MQTT_PORT);
   client.setCallback(callback);
 }
 
-WiFiManager wifiManager;
+
 void setup_wifi() {
 
   delay(10);
