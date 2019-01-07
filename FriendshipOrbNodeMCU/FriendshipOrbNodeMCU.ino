@@ -39,13 +39,8 @@ bool holdingButton = false;
 
 #define MQTT_PORT 1883
 
-#define MQTT_CLIENT_NAME "Rocks"
-
 uint32_t currentColor = 0xFF00FF;
 #define LIGHT_ON_DURATION 1000
-
-#define IN_TOPIC "friendship"
-#define OUT_TOPIC "friendship"
 
 #define INPUT_PIN D3
 
@@ -178,9 +173,9 @@ void reconnect() {
   {
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    if (client.connect(MQTT_CLIENT_NAME)) {
+    if (client.connect(orbName)) {
       Serial.println("connected");
-      client.subscribe(IN_TOPIC);
+      client.subscribe(friendshipGroup);
     } 
     else 
     {
@@ -265,7 +260,7 @@ void loop() {
   if(digitalRead(INPUT_PIN) == 0)
   {
     msg[0] = (char)newPosition%255;
-    client.publish(OUT_TOPIC, msg);
+    client.publish(friendshipGroup, msg);
 
     if(!holdingButton)
     {
