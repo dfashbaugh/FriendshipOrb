@@ -69,7 +69,9 @@ uint32_t Wheel(byte WheelPos) {
 }
 
 // Custom Parameters
-char friendshipGroup[40] = "";
+#define CUSTOM_STRING_BUFFER_SIZE 40
+char friendshipGroup[CUSTOM_STRING_BUFFER_SIZE] = "";
+char orbName[CUSTOM_STRING_BUFFER_SIZE] = "";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -84,15 +86,21 @@ void setup() {
 
   EEPROM.begin(EEPROM_SIZE);
 
-  for(int i = 0; i < 40; i++)
+  for(int i = 0; i < CUSTOM_STRING_BUFFER_SIZE; i++)
   {
     friendshipGroup[i] = EEPROM.read(i);
   }
+  for(int i = CUSTOM_STRING_BUFFER_SIZE; i < 2*CUSTOM_STRING_BUFFER_SIZE; i++)
+  {
+    orbName[i - CUSTOM_STRING_BUFFER_SIZE] = EEPROM.read(i);
+  }
 
   WiFiManagerParameter custom_friend_group("Friendship Group", "Friendship Group", friendshipGroup, 40);
+  WiFiManagerParameter orb_name_parameter("Orb Name", "Orb Name", orbName, 40);
 
   //add all your parameters here
   wifiManager.addParameter(&custom_friend_group);
+  wifiManager.addParameter(&orb_name_parameter);
 
   
   pinMode(INPUT_PIN, INPUT_PULLUP);
@@ -104,15 +112,22 @@ void setup() {
 
 
   strcpy(friendshipGroup, custom_friend_group.getValue());
+  strcpy(orbName, orb_name_parameter.getValue());
 
 
 
   Serial.print("The Group: ");
   Serial.println(friendshipGroup);
+  Serial.print("The Name: ");
+  Serial.println(orbName);
 
-  for(int i = 0; i < 40; i++)
+  for(int i = 0; i < CUSTOM_STRING_BUFFER_SIZE; i++)
   {
     EEPROM.write(i, friendshipGroup[i]);
+  }
+  for(int i = CUSTOM_STRING_BUFFER_SIZE; i < 2*CUSTOM_STRING_BUFFER_SIZE; i++)
+  {
+    EEPROM.write(i, orbName[i - CUSTOM_STRING_BUFFER_SIZE]);
   }
   EEPROM.commit();
 
