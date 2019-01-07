@@ -9,6 +9,9 @@
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
 
+#include <EEPROM.h>
+#define EEPROM_SIZE 512
+
 static const uint8_t D0   = 16;
 static const uint8_t D1   = 5;
 static const uint8_t D2   = 4;
@@ -79,13 +82,19 @@ WiFiManager wifiManager;
 void setup() {
   Serial.begin(115200);
 
+  EEPROM.begin(EEPROM_SIZE);
+
+  for(int i = 0; i < 40; i++)
+  {
+    friendshipGroup[i] = EEPROM.read(i);
+  }
+
   WiFiManagerParameter custom_friend_group("Friendship Group", "Friendship Group", friendshipGroup, 40);
 
   //add all your parameters here
   wifiManager.addParameter(&custom_friend_group);
 
-
-
+  
   pinMode(INPUT_PIN, INPUT_PULLUP);
 
   strip.begin(); // Initialize pins for output
@@ -100,6 +109,12 @@ void setup() {
 
   Serial.print("The Group: ");
   Serial.println(friendshipGroup);
+
+  for(int i = 0; i < 40; i++)
+  {
+    EEPROM.write(i, friendshipGroup[i]);
+  }
+  EEPROM.commit();
 
   client.setServer(mqtt_server, MQTT_PORT);
   client.setCallback(callback);
