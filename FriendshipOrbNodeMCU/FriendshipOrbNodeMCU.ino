@@ -9,6 +9,8 @@
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
 
+#include <ESP8266mDNS.h>
+
 #include <EEPROM.h>
 #define EEPROM_SIZE 512
 
@@ -26,6 +28,9 @@ static const uint8_t D10  = 1;
 
 Encoder myEnc(D5, D4);    
 long oldPosition  = -999; 
+
+// The server for the setup portal
+WiFiServer server(80);
 
 // Update these with values suitable for your network.
 const char* ssid = "....";
@@ -130,6 +135,74 @@ void setup() {
   client.setCallback(callback);
 }
 
+void startDNS()
+{
+  if (!MDNS.begin("friendshipOrb")) {
+    Serial.println("Error setting up MDNS responder!");
+    while (1) {
+      delay(1000);
+    }
+  }
+  Serial.println("mDNS responder started");
+
+  // Start TCP (HTTP) server
+  server.begin();
+  Serial.println("TCP server started");
+
+  // Add service to MDNS-SD
+  MDNS.addService("http", "tcp", 80);
+}
+
+void runDNS()
+{
+   MDNS.update();
+
+  // Check if a client has connected
+  WiFiClient client = server.available();
+  if (!client) {
+    return;
+  }
+  Serial.println("");
+  Serial.println("New client");
+
+  // Wait for data from client to become available
+  while (client.connected() && !client.available()) {
+    delay(1);
+  }
+
+  // Read the first line of HTTP request
+  String req = client.readStringUntil('\r');
+
+  // First line of HTTP request looks like "GET /path HTTP/1.1"
+  // Retrieve the "/path" part by finding the spaces
+  int addr_start = req.indexOf(' ');
+  int addr_end = req.indexOf(' ', addr_start + 1);
+  if (addr_start == -1 || addr_end == -1) {
+    Serial.print("Invalid request: ");
+    Serial.println(req);
+    return;
+  }
+  req = req.substring(addr_start + 1, addr_end);
+  Serial.print("Request: ");
+  Serial.println(req);
+  client.flush();
+
+  String s;
+  if (req == "/") {
+    IPAddress ip = WiFi.localIP();
+    String ipStr = String(ip[0]) + '.' + String(ip[1]) + '.' + String(ip[2]) + '.' + String(ip[3]);
+    s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>Hello from Friendship Orb at ";
+    s += ipStr;
+    s += "</html>\r\n\r\n";
+    Serial.println("Sending 200");
+  } else {
+    s = "HTTP/1.1 404 Not Found\r\n\r\n";
+    Serial.println("Sending 404");
+  }
+  client.print(s);
+
+  Serial.println("Done with client");
+}
 
 void setup_wifi() {
 
@@ -147,6 +220,8 @@ void setup_wifi() {
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+
+  startDNS();
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -243,6 +318,8 @@ void doWiFiReset()
 }
 
 void loop() {
+
+  runDNS();
 
   long newPosition = myEnc.read();
   if (newPosition != oldPosition) {
