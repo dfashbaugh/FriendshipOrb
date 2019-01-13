@@ -154,14 +154,9 @@ void handleRoot() {
   <body>\
           <h1>Friendship Orb</h1>\
           Orb Name : <br/>\
-          <input type='text' name='orb_name' id='orb_name' size=40 value=\"";
-
-          webPage+= orbNameStr;
-          webPage+="\" autofocus> <br/>\
+          <input type='text' name='orb_name' id='orb_name' size=40 value=\""; webPage+= orbNameStr; webPage+="\" autofocus> <br/>\
           Friendship Group : <br/>\
-          <input type='text' name='friendship_group' id='friendship_group' size=40 value=\"";
-          webPage += friendGroupStr;
-          webPage += "\" autofocus> <br/>\
+          <input type='text' name='friendship_group' id='friendship_group' size=40 value=\""; webPage += friendGroupStr; webPage += "\" autofocus> <br/>\
           <div>\
           <br><button id=\"save_button\">Save</button>\
           </div>\
@@ -189,12 +184,18 @@ void handleRoot() {
 
 
 void handleSave() {
+  String orbNameStr(orbName);
+  String friendGroupStr(friendshipGroup);
+
   if (server.arg("orb_name")!= ""){
     Serial.println("OrbName: " + server.arg("orb_name"));
+
+    Serial.println(orbNameStr == server.arg("orb_name"));
   }
 
   if (server.arg("friendship_group")!= ""){
     Serial.println("FriendshipGroup: " + server.arg("friendship_group"));
+    Serial.println(friendGroupStr == server.arg("friendship_group"));
   }
 
 }
