@@ -186,16 +186,24 @@ void handleRoot() {
 void handleSave() {
   String orbNameStr(orbName);
   String friendGroupStr(friendshipGroup);
+  bool didChangeOccur = false;
 
   if (server.arg("orb_name")!= ""){
     Serial.println("OrbName: " + server.arg("orb_name"));
-
-    Serial.println(orbNameStr == server.arg("orb_name"));
+    server.arg("orb_name").toCharArray(orbName, CUSTOM_STRING_BUFFER_SIZE);
+    if(orbNameStr != server.arg("orb_name"))
+    {
+      didChangeOccur = true;
+    }
   }
 
   if (server.arg("friendship_group")!= ""){
     Serial.println("FriendshipGroup: " + server.arg("friendship_group"));
-    Serial.println(friendGroupStr == server.arg("friendship_group"));
+    server.arg("friendship_group").toCharArray(friendshipGroup, CUSTOM_STRING_BUFFER_SIZE);
+    if(friendGroupStr != server.arg("friendship_group"))
+    {
+      didChangeOccur = true;
+    }
   }
 
 }
