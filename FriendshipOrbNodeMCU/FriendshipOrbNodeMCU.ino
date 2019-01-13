@@ -86,6 +86,18 @@ void SaveGroupAndOrbNameToEEPROM()
   EEPROM.commit();
 }
 
+String GetOrbMacID()
+{
+  uint8_t mac[WL_MAC_ADDR_LENGTH];
+  WiFi.softAPmacAddress(mac);
+  String baseName = "FriendshipOrb";
+  String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
+                 String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
+  macID.toUpperCase();
+
+  return baseName + macID;
+}
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 long lastMsg = 0;
@@ -223,7 +235,7 @@ void handleSave() {
 
 void startDNS()
 {
-  if (!MDNS.begin("friendshipOrb")) {
+  if (!MDNS.begin(GetOrbMacID().c_str())) {
     Serial.println("Error setting up MDNS responder!");
     while (1) {
       delay(1000);
@@ -258,7 +270,7 @@ void setup_wifi() {
   lightResetPixelColor();
   strip.show();
   //wifiManager.resetSettings();
-  wifiManager.autoConnect("Friendship Orb");
+  wifiManager.autoConnect(GetOrbMacID().c_str());
 
   Serial.println("");
   Serial.println("WiFi connected");
