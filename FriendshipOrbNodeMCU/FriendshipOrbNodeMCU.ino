@@ -73,6 +73,19 @@ uint32_t Wheel(byte WheelPos) {
 char friendshipGroup[CUSTOM_STRING_BUFFER_SIZE] = "";
 char orbName[CUSTOM_STRING_BUFFER_SIZE] = "";
 
+void SaveGroupAndOrbNameToEEPROM()
+{
+  for(int i = 0; i < CUSTOM_STRING_BUFFER_SIZE; i++)
+  {
+    EEPROM.write(i, friendshipGroup[i]);
+  }
+  for(int i = CUSTOM_STRING_BUFFER_SIZE; i < 2*CUSTOM_STRING_BUFFER_SIZE; i++)
+  {
+    EEPROM.write(i, orbName[i - CUSTOM_STRING_BUFFER_SIZE]);
+  }
+  EEPROM.commit();
+}
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 long lastMsg = 0;
@@ -115,21 +128,12 @@ void setup() {
   strcpy(orbName, orb_name_parameter.getValue());
 
 
-
   Serial.print("The Group: ");
   Serial.println(friendshipGroup);
   Serial.print("The Name: ");
   Serial.println(orbName);
 
-  for(int i = 0; i < CUSTOM_STRING_BUFFER_SIZE; i++)
-  {
-    EEPROM.write(i, friendshipGroup[i]);
-  }
-  for(int i = CUSTOM_STRING_BUFFER_SIZE; i < 2*CUSTOM_STRING_BUFFER_SIZE; i++)
-  {
-    EEPROM.write(i, orbName[i - CUSTOM_STRING_BUFFER_SIZE]);
-  }
-  EEPROM.commit();
+  SaveGroupAndOrbNameToEEPROM();
 
   client.setServer(mqtt_server, MQTT_PORT);
   client.setCallback(callback);
@@ -204,6 +208,13 @@ void handleSave() {
     {
       didChangeOccur = true;
     }
+  }
+
+  if(didChangeOccur)
+  {
+    SaveGroupAndOrbNameToEEPROM();
+    client.disconnect();
+    reconnect();
   }
 
 }
