@@ -150,27 +150,26 @@ void handleRoot() {
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\
   </head>\
   <body>\
-          <h1>Time</h1>\
-          <input type='text' name='date_hh' id='date_hh' size=2 autofocus> hh \
-          <input type='text' name='date_mm' id='date_mm' size=2 autofocus> mm \
-          <input type='text' name='date_ss' id='date_ss' size=2 autofocus> ss \
+          <h1>Friendship Orb</h1>\
+          Orb Name : <br/>\
+          <input type='text' name='orb_name' id='orb_name' size=40 value=\"OrbName\" autofocus> <br/>\
+          Friendship Group : <br/>\
+          <input type='text' name='friendship_group' id='friendship_group' size=40 value=\"friendGroup\" autofocus> <br/>\
           <div>\
           <br><button id=\"save_button\">Save</button>\
           </div>\
-    <script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js\"></script>\    
+    <script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js\"></script>\
     <script>\
-      var hh;\
-      var mm;\
-      var ss;\
+      var orbName;\
+      var friendshipGroup;\
       $('#save_button').click(function(e){\
         e.preventDefault();\
-        hh = $('#date_hh').val();\
-        mm = $('#date_mm').val();\
-        ss = $('#date_ss').val();\        
-        $.get('/save?hh=' + hh + '&mm=' + mm + '&ss=' + ss, function(data){\
+        orbName = $('#orb_name').val();\
+        friendshipGroup = $('#friendship_group').val();\
+        $.get('/save?orb_name=' + orbName + '&friendship_group=' + friendshipGroup, function(data){\
           console.log(data);\
         });\
-      });\      
+      });\
     </script>\
   </body>\
 </html>"); 
@@ -181,16 +180,12 @@ void handleRoot() {
 
 
 void handleSave() {
-  if (server.arg("hh")!= ""){
-    Serial.println("Hours: " + server.arg("hh"));
+  if (server.arg("orb_name")!= ""){
+    Serial.println("OrbName: " + server.arg("orb_name"));
   }
 
-  if (server.arg("mm")!= ""){
-    Serial.println("Minutes: " + server.arg("mm"));
-  }
-
-  if (server.arg("ss")!= ""){
-    Serial.println("Seconds: " + server.arg("ss"));
+  if (server.arg("friendship_group")!= ""){
+    Serial.println("FriendshipGroup: " + server.arg("friendship_group"));
   }
 
 }
