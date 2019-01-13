@@ -30,7 +30,7 @@ Encoder myEnc(D5, D4);
 long oldPosition  = -999; 
 
 // The server for the setup portal
-WiFiServer server(80);
+ESP8266WebServer server ( 80 );
 
 // Update these with values suitable for your network.
 const char* ssid = "....";
@@ -135,6 +135,68 @@ void setup() {
   client.setCallback(callback);
 }
 
+
+
+
+char htmlResponse[3000];
+
+void handleRoot() {
+
+  snprintf ( htmlResponse, 3000,
+"<!DOCTYPE html>\
+<html lang=\"en\">\
+  <head>\
+    <meta charset=\"utf-8\">\
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\
+  </head>\
+  <body>\
+          <h1>Time</h1>\
+          <input type='text' name='date_hh' id='date_hh' size=2 autofocus> hh \
+          <input type='text' name='date_mm' id='date_mm' size=2 autofocus> mm \
+          <input type='text' name='date_ss' id='date_ss' size=2 autofocus> ss \
+          <div>\
+          <br><button id=\"save_button\">Save</button>\
+          </div>\
+    <script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js\"></script>\    
+    <script>\
+      var hh;\
+      var mm;\
+      var ss;\
+      $('#save_button').click(function(e){\
+        e.preventDefault();\
+        hh = $('#date_hh').val();\
+        mm = $('#date_mm').val();\
+        ss = $('#date_ss').val();\        
+        $.get('/save?hh=' + hh + '&mm=' + mm + '&ss=' + ss, function(data){\
+          console.log(data);\
+        });\
+      });\      
+    </script>\
+  </body>\
+</html>"); 
+
+   server.send ( 200, "text/html", htmlResponse );  
+
+}
+
+
+void handleSave() {
+  if (server.arg("hh")!= ""){
+    Serial.println("Hours: " + server.arg("hh"));
+  }
+
+  if (server.arg("mm")!= ""){
+    Serial.println("Minutes: " + server.arg("mm"));
+  }
+
+  if (server.arg("ss")!= ""){
+    Serial.println("Seconds: " + server.arg("ss"));
+  }
+
+}
+
+
+
 void startDNS()
 {
   if (!MDNS.begin("friendshipOrb")) {
@@ -146,6 +208,9 @@ void startDNS()
   Serial.println("mDNS responder started");
 
   // Start TCP (HTTP) server
+  server.on ( "/", handleRoot );
+  server.on ("/save", handleSave);
+
   server.begin();
   Serial.println("TCP server started");
 
@@ -155,53 +220,8 @@ void startDNS()
 
 void runDNS()
 {
-   MDNS.update();
-
-  // Check if a client has connected
-  WiFiClient client = server.available();
-  if (!client) {
-    return;
-  }
-  Serial.println("");
-  Serial.println("New client");
-
-  // Wait for data from client to become available
-  while (client.connected() && !client.available()) {
-    delay(1);
-  }
-
-  // Read the first line of HTTP request
-  String req = client.readStringUntil('\r');
-
-  // First line of HTTP request looks like "GET /path HTTP/1.1"
-  // Retrieve the "/path" part by finding the spaces
-  int addr_start = req.indexOf(' ');
-  int addr_end = req.indexOf(' ', addr_start + 1);
-  if (addr_start == -1 || addr_end == -1) {
-    Serial.print("Invalid request: ");
-    Serial.println(req);
-    return;
-  }
-  req = req.substring(addr_start + 1, addr_end);
-  Serial.print("Request: ");
-  Serial.println(req);
-  client.flush();
-
-  String s;
-  if (req == "/") {
-    IPAddress ip = WiFi.localIP();
-    String ipStr = String(ip[0]) + '.' + String(ip[1]) + '.' + String(ip[2]) + '.' + String(ip[3]);
-    s = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE HTML>\r\n<html>Hello from Friendship Orb at ";
-    s += ipStr;
-    s += "</html>\r\n\r\n";
-    Serial.println("Sending 200");
-  } else {
-    s = "HTTP/1.1 404 Not Found\r\n\r\n";
-    Serial.println("Sending 404");
-  }
-  client.print(s);
-
-  Serial.println("Done with client");
+  MDNS.update();
+  server.handleClient();
 }
 
 void setup_wifi() {
