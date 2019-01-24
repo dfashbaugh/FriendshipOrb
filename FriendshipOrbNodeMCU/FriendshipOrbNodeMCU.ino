@@ -427,16 +427,10 @@ void loop() {
     changedLightState = false;
   }
 
-  //if(millis() - lightStartedTime < LIGHT_ON_DURATION)
-  //{
   if(lightsOn)
     lightMainPixelColor();
   else
     clearAllPixels();
-  //}
-  //else
-  //{
-    //clearAllPixels();
-  //}
+
   strip.show();
 }
