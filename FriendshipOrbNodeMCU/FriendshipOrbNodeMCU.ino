@@ -376,7 +376,7 @@ void doWiFiReset()
 
 }
 
-void checkHoldButtonActions()
+void doHoldButtonActions()
 {
   if( holdingButton && ((millis() - startedHoldingPeriod) > RESET_HOLD_PERIOD) )
   {
@@ -409,18 +409,8 @@ int readEncoderAndSetColor()
   return newPosition;
 }
 
-void loop() {
-
-  runDNS();
-
-  long newPosition = readEncoderAndSetColor();
-
-  if (!client.connected()) 
-  {
-    reconnect();
-  }
-  client.loop();
-
+void doPressedButtonActions(long newPosition)
+{
   if(digitalRead(INPUT_PIN) == 0)
   {
     msg[0] = (char)newPosition%255;
@@ -436,8 +426,23 @@ void loop() {
   {
     holdingButton = false;
   }
+}
 
-  checkHoldButtonActions();
+void loop() {
+
+  if (!client.connected()) 
+  {
+    reconnect();
+  }
+  client.loop();
+
+  runDNS();
+
+  long newPosition = readEncoderAndSetColor();
+
+  doPressedButtonActions(newPosition);
+
+  doHoldButtonActions();
 
   if(lightsOn)
     lightMainPixelColor();
