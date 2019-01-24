@@ -376,16 +376,44 @@ void doWiFiReset()
 
 }
 
-void loop() {
+void checkHoldButtonActions()
+{
+  if( holdingButton && ((millis() - startedHoldingPeriod) > RESET_HOLD_PERIOD) )
+  {
+    doWiFiReset();
+  }
+  else if( holdingButton && ((millis() - startedHoldingPeriod) > OFF_ON_HOLD_PERIOD) )
+  {
+    if(!changedLightState)
+    {
+      lightsOn = !lightsOn;
+    }
 
-  runDNS();
+    changedLightState = true;
+  }
+  else
+  {
+    changedLightState = false;
+  }
+}
 
+int readEncoderAndSetColor()
+{
   long newPosition = myEnc.read();
   if (newPosition != oldPosition) {
     oldPosition = newPosition;
     Serial.println(newPosition);
   }
   currentColor = Wheel(newPosition%255);
+
+  return newPosition;
+}
+
+void loop() {
+
+  runDNS();
+
+  long newPosition = readEncoderAndSetColor();
 
   if (!client.connected()) 
   {
@@ -409,23 +437,7 @@ void loop() {
     holdingButton = false;
   }
 
-  if( holdingButton && ((millis() - startedHoldingPeriod) > RESET_HOLD_PERIOD) )
-  {
-    doWiFiReset();
-  }
-  else if( holdingButton && ((millis() - startedHoldingPeriod) > OFF_ON_HOLD_PERIOD) )
-  {
-    if(!changedLightState)
-    {
-      lightsOn = !lightsOn;
-    }
-
-    changedLightState = true;
-  }
-  else
-  {
-    changedLightState = false;
-  }
+  checkHoldButtonActions();
 
   if(lightsOn)
     lightMainPixelColor();
