@@ -37,10 +37,13 @@ const char* ssid = "....";
 const char* password = ".....";
 const char* mqtt_server = "68.183.121.10";
 
-#define RESET_HOLD_PERIOD 3000
+#define OFF_ON_HOLD_PERIOD 3000
+#define RESET_HOLD_PERIOD 30000
 #define RESET_COLOR 0xFFFF00
 unsigned long startedHoldingPeriod = 0;
 bool holdingButton = false;
+bool lightsOn = true;
+bool changedLightState = false;
 
 #define MQTT_PORT 1883
 
@@ -410,10 +413,26 @@ void loop() {
   {
     doWiFiReset();
   }
+  else if( holdingButton && ((millis() - startedHoldingPeriod) > OFF_ON_HOLD_PERIOD) )
+  {
+    if(!changedLightState)
+    {
+      lightsOn = !lightsOn;
+    }
+
+    changedLightState = true;
+  }
+  else
+  {
+    changedLightState = false;
+  }
 
   //if(millis() - lightStartedTime < LIGHT_ON_DURATION)
   //{
+  if(lightsOn)
     lightMainPixelColor();
+  else
+    clearAllPixels();
   //}
   //else
   //{
