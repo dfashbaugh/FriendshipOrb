@@ -37,6 +37,9 @@ const char* ssid = "....";
 const char* password = ".....";
 const char* mqtt_server = "68.183.121.10";
 
+#define BRIGHTNESS_RATE 0.05;
+float currentBrightness = 1.0;
+
 #define OFF_ON_HOLD_PERIOD 3000
 #define RESET_HOLD_PERIOD 30000
 #define RESET_COLOR 0xFFFF00
@@ -346,6 +349,35 @@ void lightResetPixelColor()
   }
 }
 
+void applyBrightnessToCurrentColor()
+{
+  int red = (currentColor >> 16) & 0xFF;
+  int green = (currentColor >> 8) & 0xFF;
+  int blue = currentColor & 0xFF;
+
+  red = currentBrightness * red;
+  green = currentBrightness * green;
+  blue = currentBrightness * blue;
+
+  currentColor = (red << 16) | (green << 8) | (blue);
+}
+
+void handleCurrentBrightness()
+{
+  if(lightsOn)
+  {
+    currentBrightness += BRIGHTNESS_RATE;
+    if(currentBrightness > 1.0)
+      currentBrightness = 1.0;
+  }
+  else
+  {
+    currentBrightness -= BRIGHTNESS_RATE;
+    if(currentBrightness < 0)
+      currentBrightness = 0;
+  }
+}
+
 void doYieldDelay(unsigned long length)
 {
   unsigned long startTime = millis();
@@ -444,10 +476,11 @@ void loop() {
 
   doHoldButtonActions();
 
-  if(lightsOn)
-    lightMainPixelColor();
-  else
-    clearAllPixels();
+  handleCurrentBrightness();
+
+  applyBrightnessToCurrentColor();
+
+  lightMainPixelColor();
 
   strip.show();
 }
