@@ -283,7 +283,7 @@ void setup_wifi() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  startDNS();
+  // startDNS();
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
@@ -468,7 +468,7 @@ void loop() {
   }
   client.loop();
 
-  runDNS();
+  // runDNS();
 
   long newPosition = readEncoderAndSetColor();
 
