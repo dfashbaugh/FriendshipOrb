@@ -429,15 +429,61 @@ void doHoldButtonActions()
   }
 }
 
+#define NUM_COLORS 420
 int readEncoderAndSetColor()
 {
   long newPosition = myEnc.read();
   if (newPosition != oldPosition) {
     oldPosition = newPosition;
-    Serial.println(newPosition);
+    //Serial.println(newPosition % NUM_COLORS);
   }
-  currentColor = Wheel(newPosition%255);
 
+  int positionOfImportance = abs(newPosition%NUM_COLORS);
+
+  if(positionOfImportance > 255)
+  {
+    currentColor = Wheel(255);
+    int r = (currentColor >> 16) & 0xFF;
+    int g = (currentColor >> 8) & 0xFF;
+    int b = (currentColor) & 0xFF;
+
+    int riseFallSize = (NUM_COLORS - 255)/2;
+    float multiplier = (float)255/(float)(riseFallSize);
+
+    int positionDiff = positionOfImportance - 255 - riseFallSize;
+    if(positionDiff < 0)
+    {
+      positionDiff += riseFallSize;
+      r += positionDiff*multiplier;
+      g += positionDiff*multiplier;
+      b += positionDiff*multiplier;
+    }
+    else
+    {
+      r += 255 - positionDiff*multiplier;
+      g += 255 - positionDiff*multiplier;
+      b += 255 - positionDiff*multiplier;
+    }
+    
+    if(r > 255) r = 255;
+    if(g > 255) g = 255;
+    if(b > 255) b = 255;
+    currentColor = (r << 16) | (g << 8) | (b);
+
+  }
+  else
+  {
+    currentColor = Wheel(positionOfImportance);
+  }
+  
+  int r = (currentColor >> 16) & 0xFF;
+  int g = (currentColor >> 8) & 0xFF;
+  int b = (currentColor) & 0xFF;
+  Serial.print(positionOfImportance);  Serial.print(",");
+  Serial.print(r); Serial.print(",");
+  Serial.print(g); Serial.print(",");
+  Serial.println(b);
+  
   return newPosition;
 }
 
@@ -445,7 +491,7 @@ void doPressedButtonActions(long newPosition)
 {
   if(digitalRead(INPUT_PIN) == 0)
   {
-    msg[0] = (char)newPosition%255;
+    msg[0] = (char)newPosition%NUM_COLORS;
     client.publish(friendshipGroup, msg);
 
     if(!holdingButton)
