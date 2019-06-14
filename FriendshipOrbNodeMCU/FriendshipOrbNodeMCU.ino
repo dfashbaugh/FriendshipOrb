@@ -54,6 +54,7 @@ uint32_t currentColor = 0xFF00FF;
 #define LIGHT_ON_DURATION 1000
 
 #define INPUT_PIN D3
+bool inOnlineMode = true;
 
 // Setup LEDs
 #define NUMPIXELS 255 
@@ -139,22 +140,32 @@ void setup() {
   strip.begin(); // Initialize pins for output
   strip.show();  // Turn all LEDs off ASAP
 
-  setup_wifi();
+  if(digitalRead(INPUT_PIN) == 0)
+  {
+    inOnlineMode = false;
+  }
+
+  if(inOnlineMode)
+  {
+
+    setup_wifi();
 
 
-  strcpy(friendshipGroup, custom_friend_group.getValue());
-  strcpy(orbName, orb_name_parameter.getValue());
+    strcpy(friendshipGroup, custom_friend_group.getValue());
+    strcpy(orbName, orb_name_parameter.getValue());
 
 
-  Serial.print("The Group: ");
-  Serial.println(friendshipGroup);
-  Serial.print("The Name: ");
-  Serial.println(orbName);
+    Serial.print("The Group: ");
+    Serial.println(friendshipGroup);
+    Serial.print("The Name: ");
+    Serial.println(orbName);
 
-  SaveGroupAndOrbNameToEEPROM();
+    SaveGroupAndOrbNameToEEPROM();
 
-  client.setServer(mqtt_server, MQTT_PORT);
-  client.setCallback(callback);
+    client.setServer(mqtt_server, MQTT_PORT);
+    client.setCallback(callback);
+
+  }
 }
 
 
@@ -508,18 +519,24 @@ void doPressedButtonActions(long newPosition)
 
 void loop() {
 
-  if (!client.connected()) 
+  if(inOnlineMode)
   {
-    reconnect();
-  }
-  client.loop();
+    if (!client.connected()) 
+    {
+      reconnect();
+    }
+    client.loop();
 
-  // runDNS();
+    // runDNS();
+  }
 
   long newPosition = readEncoderAndSetColor();
 
-  doPressedButtonActions(newPosition);
-
+  if(inOnlineMode)
+  {
+    doPressedButtonActions(newPosition);
+  }
+  
   doHoldButtonActions();
 
   handleCurrentBrightness();
