@@ -306,7 +306,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
   Serial.println();
 
-  myEnc.write(payload[0]);
+  int positionToWrite = payload[0] + (payload[1] << 8);
+  myEnc.write(positionToWrite);
 
   lightStartedTime = millis();
 
@@ -502,7 +503,9 @@ void doPressedButtonActions(long newPosition)
 {
   if(digitalRead(INPUT_PIN) == 0)
   {
-    msg[0] = (char)newPosition%NUM_COLORS;
+    int positionToSend = newPosition%NUM_COLORS;
+    msg[0] = positionToSend & 0xFF;
+    msg[1] = (positionToSend >> 8) & 0xFF;
     client.publish(friendshipGroup, msg);
 
     if(!holdingButton)
