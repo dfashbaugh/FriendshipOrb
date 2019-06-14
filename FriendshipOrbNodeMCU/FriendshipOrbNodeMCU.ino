@@ -306,7 +306,22 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
   Serial.println();
 
-  int positionToWrite = payload[0] + (payload[1] << 8);
+  int firstByte = (int)payload[0] & 0xFF;
+  int secondByte = (int)payload[1] & 0xFF;
+
+  if(secondByte > 1)
+  {
+    secondByte = 0;
+  }
+
+  Serial.println(secondByte);
+  secondByte = secondByte << 8;
+
+  int positionToWrite = firstByte | secondByte;
+  Serial.println(positionToWrite);
+  Serial.println(firstByte);
+  Serial.println(secondByte);
+
   myEnc.write(positionToWrite);
 
   lightStartedTime = millis();
@@ -491,10 +506,10 @@ int readEncoderAndSetColor()
   int r = (currentColor >> 16) & 0xFF;
   int g = (currentColor >> 8) & 0xFF;
   int b = (currentColor) & 0xFF;
-  Serial.print(positionOfImportance);  Serial.print(",");
-  Serial.print(r); Serial.print(",");
-  Serial.print(g); Serial.print(",");
-  Serial.println(b);
+  // Serial.print(positionOfImportance);  Serial.print(",");
+  // Serial.print(r); Serial.print(",");
+  // Serial.print(g); Serial.print(",");
+  // Serial.println(b);
   
   return newPosition;
 }
@@ -504,8 +519,16 @@ void doPressedButtonActions(long newPosition)
   if(digitalRead(INPUT_PIN) == 0)
   {
     int positionToSend = newPosition%NUM_COLORS;
-    msg[0] = positionToSend & 0xFF;
-    msg[1] = (positionToSend >> 8) & 0xFF;
+    positionToSend = abs(positionToSend);
+    int firstByte = positionToSend & 0xFF;
+    int secondByte =(positionToSend >> 8) & 0xFF;
+    msg[0] = firstByte;
+    msg[1] = secondByte;
+
+    Serial.print("Sent Position: "); Serial.println(positionToSend);
+    Serial.println(firstByte);
+    Serial.println(secondByte);
+
     client.publish(friendshipGroup, msg);
 
     if(!holdingButton)
