@@ -302,27 +302,26 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print(topic);
   Serial.print("] ");
   for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
+    Serial.print(payload[i]);
+    Serial.print(" ");
   }
   Serial.println();
+  Serial.println(length);
 
   int firstByte = (int)payload[0] & 0xFF;
   int secondByte = (int)payload[1] & 0xFF;
 
-  if(secondByte > 1)
-  {
-    secondByte = 0;
-  }
+  Serial.print(payload[0]);
+  Serial.print(" ");
+  Serial.print(payload[1]);
+  Serial.print(" ");
+  Serial.println(payload[2]);
 
-  Serial.println(secondByte);
-  secondByte = secondByte << 8;
+  currentColor = payload[0] << 16 | payload[1] << 8 | payload[2];
+  Serial.println(currentColor);
 
-  int positionToWrite = firstByte | secondByte;
-  Serial.println(positionToWrite);
-  Serial.println(firstByte);
-  Serial.println(secondByte);
 
-  myEnc.write(positionToWrite);
+  // myEnc.write(positionToWrite);
 
   lightStartedTime = millis();
 
@@ -339,7 +338,7 @@ void reconnect() {
     // Attempt to connect
     if (client.connect(orbName)) {
       Serial.println("connected");
-      client.subscribe(friendshipGroup);
+      client.subscribe("partyColor");
     } 
     else 
     {
@@ -556,19 +555,19 @@ void loop() {
     // runDNS();
   }
 
-  long newPosition = readEncoderAndSetColor();
+  //long newPosition = readEncoderAndSetColor();
 
-  if(inOnlineMode)
-  {
-    doPressedButtonActions(newPosition);
-  }
+  //if(inOnlineMode)
+  //{
+  //  doPressedButtonActions(newPosition);
+  //}
   
-  doHoldButtonActions();
-
-  handleCurrentBrightness();
-
-  applyBrightnessToCurrentColor();
-
+  //doHoldButtonActions();
+//
+  //handleCurrentBrightness();
+//
+  //applyBrightnessToCurrentColor();
+//
   lightMainPixelColor();
 
   strip.show();
